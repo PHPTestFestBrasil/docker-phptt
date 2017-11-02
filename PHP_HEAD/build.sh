@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker build --tag docker-phptt:master .
+docker build --tag docker-phptt:PHP_HEAD .
