@@ -98,7 +98,7 @@ RUN set -xe; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p /usr/src; \
     cd /usr/src; \
-    wget -O php-src-master.zip https://github.com/php/php-src/archive/master.zip;
+    wget -O php-src-PHP-7.2.zip https://github.com/php/php-src/archive/PHP-7.2.zip;
 
 COPY docker-php-source /usr/local/bin/
 
