@@ -1,4 +1,5 @@
-# docker-phptt
+# docker-phptt [![Build Status](https://travis-ci.org/PHPTestFestBrasil/docker-phptt.svg?branch=master)](https://travis-ci.org/PHPTestFestBrasil/docker-phptt)
+
 Docker images for phptt (php test tools)
 
 ## What is phptt
