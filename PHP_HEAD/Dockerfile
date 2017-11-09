@@ -7,72 +7,89 @@ ENV PHPIZE_DEPS \
     g++ \
     gcc \
     libc-dev \
-    lcov \
     libpcre3-dev \
     make \
+    autoconf \
     pkg-config \
     re2c \
+    libedit2 \
+    libsqlite3-0 \
+    libxml2 \
+    xz-utils \
     build-essential \
     wget \
     curl \
     git \
     vim \
-    autoconf \
     software-properties-common \
+    locales \
+    libgmp-dev \
+    libicu-dev \
+    libtidy-dev \
+    libenchant-dev \
+    libaspell-dev \
+    libpspell-dev \
+    librecode-dev \
+    libsasl2-dev \
+    libxpm-dev \
+    libzip-dev \
     mm-common \
+    libssl-dev \
     libreadline-dev \
     libxslt1-dev \
-    re2c \
     libpng-dev \
     libjpeg-dev \
     m4 \
     lcov \
-    libicu-dev \
     libc-bin \
     tzdata \
     initscripts \
-    libedit2 \
     libonig2 \
     libqdbm14 \
     bison \
     snmp \
-    libbison-dev \
     libxml2-dev \
     libevent-dev \
     zlib1g-dev \
     libbz2-dev \
     libgmp3-dev \
-    libssl-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libxpm-dev \
     libgd2-xpm-dev \
     libmcrypt-dev \
     memcached \
     libmemcached-dev \
-    libpcre3-dev \
     libc-client-dev \
     libkrb5-dev \
-    libsasl2-dev \
     libmysqlclient-dev \
-    libpspell-dev \
     libsnmp-dev \
     libxslt-dev \
     libtool \
     libc-client2007e \
     libc-client2007e-dev \
-    libenchant-dev \
-    libgmp-dev \
-    librecode-dev \
     libmm-dev \
     libmm14 \
-    libzip-dev \
-    libedit-dev
+    libedit-dev \
+    libbison-dev \
+    dpkg-dev \
+    libpq-dev \
+    postgresql \
+    unixODBC \
+    unixODBC-dev \
+    valgrind \
+    libdb-dev \
+    libgdm-dev \
+    libgdbm-dev \
+    libfbclient2 \
+    firebird-dev \
+    ldap-utils \
+    libldap-dev \
+    freetds-dev
+
 ENV PHP_INI_DIR /usr/local/etc/php
 ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
+RUN ln -fs /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/libsybdb.so
 RUN ln -fs /usr/include/linux/igmp.h /usr/include/gmp.h
 RUN ln -fs /usr/lib/i386-linux-gnu/libldap.so /usr/lib/
 
@@ -132,49 +149,72 @@ RUN docker-php-source extract \
     --with-config-file-path="$PHP_INI_DIR" \
     --with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
     --enable-gcov \
-    --enable-debug \
-    --enable-sigchild \
-    --enable-libgcc \
-    --with-openssl \
-    --with-kerberos \
-    --with-pcre-regex \
-    --enable-bcmath \
+    --with-xsl \
+    --enable-wddx \
+    --with-tidy \
+    --enable-soap \
     --with-bz2 \
+    --with-imap \
+    --with-imap-ssl \
+    --with-kerberos \
+    --with-mysqli=mysqlnd \
+    --with-openssl \
+    --with-pdo-mysql=mysqlnd \
+    --with-pdo-sqlite \
+    --with-pgsql \
+    --with-pdo-pgsql \
+    --with-zlib \
+    --enable-bcmath \
     --enable-calendar \
-    --with-curl \
-    --with-enchant \
+    --enable-dba \
     --enable-exif \
     --enable-ftp \
     --with-gd \
-    --enable-gd-jis-conv \
-    --with-gettext \
-    --with-mhash \
-    --with-kerberos \
-    --with-imap-ssl \
-    --enable-intl \
-    --enable-mbstring \
-    --with-onig \
-    --with-pspell \
-    --with-recode \
-    --with-mm \
+    --with-gmp \
+    --enable-pcntl \
     --enable-shmop \
-    --with-snmp \
-    --enable-soap \
     --enable-sockets \
+    --enable-sysvmsg \
     --enable-sysvsem \
-    --enable-wddx \
+    --enable-sysvshm \
     --with-xmlrpc \
-    --with-xsl \
-    --enable-zip \
-    --with-readline \
-    --with-libedit \
-    --enable-ftp \
+    --with-snmp \
     --enable-mbstring \
-    --enable-mysqlnd \
+    --with-gdbm \
+    --with-pdo-firebird \
+    --with-gettext \
+    --with-readline \
+    --enable-intl \
+    --with-mhash \
+    --with-unixODBC=/usr \
+    --with-pdo-odbc=unixODBC,/usr \
+    --with-pdo-dblib \
+    --with-litespeed \
+    --with-interbase \
+    --with-pcre-valgrind \
+    --enable-debug \
+    --enable-sigchild \
+    --enable-libgcc \
+    --with-pcre-regex \
+    --enable-gd-jis-conv \
+    --with-onig \
+    --with-mm \
+    --enable-zip \
     --with-libedit \
-    --with-zlib \
-    --with-pcre-regex=/usr \
-    --with-libdir="lib/$debMultiarch" \
+    --enable-phpdbg \
+    --enable-fpm \
+    --without-pear \
+    --with-jpeg-dir=/usr \
+    --with-png-dir=/usr \
+    --without-libzip \
+    --with-zlib-dir=/usr \
+    --enable-xmlreader \
+    --with-curl=/usr \
+    --with-pspell=/usr \
+    --with-enchant=/usr \
+    --with-freetype-dir=/usr \
+    --with-xpm-dir=/usr \
+    --enable-zend-test \
     $PHP_EXTRA_CONFIGURE_ARGS \
     && make -j "$(nproc)" \
     && make install \
