@@ -1,5 +1,12 @@
 FROM debian:jessie
 
+ARG USER_PUID=1000
+ARG USER_PGID=1000
+ARG USER_NAME=php
+
+RUN groupadd --gid $USER_PGID $USER_NAME \
+	&& useradd --uid $USER_PUID --gid $USER_NAME -m $USER_NAME
+
 ENV PHPIZE_DEPS \
 	autoconf \
 	dpkg-dev \
@@ -188,6 +195,8 @@ RUN cd /usr/src/php/scripts/dev \
 	&& rm generate-phpt.phar \
 	&& php -d phar.readonly=0 generate-phpt/gtPackage.php \
 	&& cd /
+
+RUN chown -R $USER_NAME.$USER_NAME /usr/src/
 
 WORKDIR /usr/src/php/
 CMD ["/bin/bash"]

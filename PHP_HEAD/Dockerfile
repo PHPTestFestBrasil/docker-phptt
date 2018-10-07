@@ -1,5 +1,12 @@
 FROM debian:jessie
 
+ARG USER_PUID=1000
+ARG USER_PGID=1000
+ARG USER_NAME=php
+
+RUN groupadd --gid $USER_PGID $USER_NAME \
+    && useradd --uid $USER_PUID --gid $USER_NAME -m $USER_NAME
+
 ENV PHPIZE_DEPS \
     autoconf \
     dpkg-dev \
@@ -9,7 +16,6 @@ ENV PHPIZE_DEPS \
     libc-dev \
     libpcre3-dev \
     make \
-    autoconf \
     pkg-config \
     re2c \
     libedit2 \
@@ -89,19 +95,14 @@ ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
-RUN ln -fs /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/libsybdb.so
-RUN ln -fs /usr/include/linux/igmp.h /usr/include/gmp.h
-RUN ln -fs /usr/lib/i386-linux-gnu/libldap.so /usr/lib/
-
 RUN apt-get update && apt-get install -y \
     $PHPIZE_DEPS \
     ca-certificates \
-    curl \
-    libedit2 \
-    libsqlite3-0 \
-    libxml2 \
-    xz-utils \
     --no-install-recommends && rm -r /var/lib/apt/lists/*
+
+RUN ln -fs /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/libsybdb.so
+RUN ln -fs /usr/include/linux/igmp.h /usr/include/gmp.h
+RUN ln -fs /usr/lib/i386-linux-gnu/libldap.so /usr/lib/
 
 RUN mkdir -p $PHP_INI_DIR/conf.d
 RUN set -xe; \
@@ -123,16 +124,8 @@ RUN set -xe \
     && buildDeps=" \
     $PHP_EXTRA_BUILD_DEPS \
     libcurl4-openssl-dev \
-    libedit-dev \
     libsqlite3-dev \
-    libssl-dev \
-    libxml2-dev \
-    build-essential \
-    autoconf \
     automake \
-    libtool \
-    bison \
-    re2c \
     " \
     && apt-get update && apt-get install -y $buildDeps --no-install-recommends && rm -rf /var/lib/apt/lists/* \
     && export CFLAGS="$PHP_CFLAGS" \
@@ -203,7 +196,6 @@ RUN docker-php-source extract \
     --with-libedit \
     --enable-phpdbg \
     --enable-fpm \
-    --without-pear \
     --with-jpeg-dir=/usr \
     --with-png-dir=/usr \
     --without-libzip \
@@ -221,13 +213,19 @@ RUN docker-php-source extract \
     && { find /usr/local/bin /usr/local/sbin -type f -executable -exec strip --strip-all '{}' + || true; } \
     && cd / \
     && pecl update-channels \
-    && rm -rf /tmp/pear ~/.pearrc \
-    && apt-get purge -y --auto-remove $fetchDeps
+    && rm -rf /tmp/pear ~/.pearrc 
+    
 
 RUN cd /usr/src/php/scripts/dev \
     && rm generate-phpt.phar \
     && php -d phar.readonly=0 generate-phpt/gtPackage.php \
     && cd /
 
+RUN chown -R $USER_NAME.$USER_NAME /usr/src/
+
 WORKDIR /usr/src/php/
 CMD ["/bin/bash"]
+
+
+
+
