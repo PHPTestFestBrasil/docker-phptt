@@ -88,7 +88,9 @@ ENV PHPIZE_DEPS \
     firebird-dev \
     ldap-utils \
     libldap-dev \
-    freetds-dev
+    freetds-dev \
+    libzip \
+    libzip-dev
 
 ENV PHP_INI_DIR /usr/local/etc/php
 ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
