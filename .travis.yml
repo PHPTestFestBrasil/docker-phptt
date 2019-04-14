@@ -2,8 +2,6 @@ language: bash
 services: docker
 env:
   matrix:
-  - VERSION=PHP_5_6
-  - VERSION=PHP_7_0
   - VERSION=PHP_7_1
   - VERSION=PHP_7_2
   - VERSION=PHP_7_3
