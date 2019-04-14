@@ -191,11 +191,6 @@ RUN docker-php-source extract \
     && rm -rf /tmp/pear ~/.pearrc \
     && apt-get purge -y --auto-remove $fetchDeps
 
-RUN cd /usr/src/php/scripts/dev \
-    && rm generate-phpt.phar \
-    && php -d phar.readonly=0 generate-phpt/gtPackage.php \
-    && cd /
-
 RUN chown -R $USER_NAME.$USER_NAME /usr/src/
 
 WORKDIR /usr/src/php/
