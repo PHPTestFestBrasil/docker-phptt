@@ -215,12 +215,6 @@ RUN docker-php-source extract \
     && pecl update-channels \
     && rm -rf /tmp/pear ~/.pearrc 
     
-
-RUN cd /usr/src/php/scripts/dev \
-    && rm generate-phpt.phar \
-    && php -d phar.readonly=0 generate-phpt/gtPackage.php \
-    && cd /
-
 RUN chown -R $USER_NAME.$USER_NAME /usr/src/
 
 WORKDIR /usr/src/php/
