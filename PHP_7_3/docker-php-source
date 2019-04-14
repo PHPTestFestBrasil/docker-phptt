@@ -1,0 +1,43 @@
+#!/bin/sh
+set -e
+
+dir=/usr/src/php
+
+usage() {
+	echo "usage: $0 COMMAND"
+	echo
+	echo "Manage php source zip archive lifecycle."
+	echo
+	echo "Commands:"
+	echo "   extract  extract php source zip archive into directory $dir if not already done."
+	echo "   delete   delete extracted php source located into $dir if not already done."
+	echo
+}
+
+case "$1" in
+	extract)
+		mkdir -p "$dir"
+		if [ -f "/usr/src/php-src-master.zip" ]; then
+            unzip /usr/src/php-src-master.zip -d "/tmp" && mv /tmp/php-src-master/* "$dir"
+		elif [ -f "/usr/src/php-src-PHP-7.3.zip" ]; then
+			unzip /usr/src/php-src-PHP-7.3.zip -d "/tmp" && mv /tmp/php-src-PHP-7.3/* "$dir"
+		elif [ -f "/usr/src/php-src-PHP-7.2.zip" ]; then
+			unzip /usr/src/php-src-PHP-7.2.zip -d "/tmp" && mv /tmp/php-src-PHP-7.2/* "$dir"
+		elif [ -f "/usr/src/php-src-PHP-7.1.zip" ]; then
+			unzip /usr/src/php-src-PHP-7.1.zip -d "/tmp" && mv /tmp/php-src-PHP-7.1/* "$dir"
+		elif [ -f "/usr/src/php-src-PHP-7.0.zip" ]; then
+			unzip /usr/src/php-src-PHP-7.0.zip -d "/tmp" && mv /tmp/php-src-PHP-7.0/* "$dir"
+		elif [ -f "/usr/src/php-src-PHP-5.6.zip" ]; then
+			unzip /usr/src/php-src-PHP-5.6.zip -d "/tmp" && mv /tmp/php-src-PHP-5.6/* "$dir"
+		fi
+		;;
+
+	delete)
+		rm -rf "$dir"
+		;;
+
+	*)
+		usage
+		exit 1
+		;;
+esac
