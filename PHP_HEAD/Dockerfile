@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:stretch
 
 ARG USER_PUID=1000
 ARG USER_PGID=1000
@@ -50,7 +50,6 @@ ENV PHPIZE_DEPS \
     libc-bin \
     tzdata \
     initscripts \
-    libonig2 \
     libqdbm14 \
     bison \
     snmp \
@@ -65,7 +64,6 @@ ENV PHPIZE_DEPS \
     libmemcached-dev \
     libc-client-dev \
     libkrb5-dev \
-    libmysqlclient-dev \
     libsnmp-dev \
     libxslt-dev \
     libtool \
@@ -75,11 +73,11 @@ ENV PHPIZE_DEPS \
     libmm14 \
     libedit-dev \
     libbison-dev \
+    libonig-dev \
     dpkg-dev \
     libpq-dev \
-    postgresql \
-    unixODBC \
-    unixODBC-dev \
+    unixodbc-dev \
+    unixodbc-dev \
     valgrind \
     libdb-dev \
     libgdm-dev \
@@ -219,7 +217,3 @@ RUN chown -R $USER_NAME.$USER_NAME /usr/src/
 
 WORKDIR /usr/src/php/
 CMD ["/bin/bash"]
-
-
-
-
