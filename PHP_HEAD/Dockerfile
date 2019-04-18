@@ -75,7 +75,7 @@ RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        libcurl4-openssl-dev \
+        libcurl4-gnutls-dev \
         libedit-dev \
         libsodium-dev \
         libsqlite3-dev \

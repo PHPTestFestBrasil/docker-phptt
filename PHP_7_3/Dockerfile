@@ -1,12 +1,19 @@
-FROM debian:jessie
+FROM debian:stretch-slim
 
-ARG USER_PUID=1000
-ARG USER_PGID=1000
-ARG USER_NAME=php
+RUN groupadd --gid 1000 php \
+    && useradd --uid 1000 --gid php -m php
 
-RUN groupadd --gid $USER_PGID $USER_NAME \
-    && useradd --uid $USER_PUID --gid $USER_NAME -m $USER_NAME
+RUN set -eux; \
+    { \
+        echo 'Package: php*'; \
+        echo 'Pin: release *'; \
+        echo 'Pin-Priority: -1'; \
+} > /etc/apt/preferences.d/no-debian-php
 
+ENV PHP_INI_DIR="/usr/local/etc/php"
+ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
+ENV PHP_CPPFLAGS="$PHP_CFLAGS"
+ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 ENV PHPIZE_DEPS \
     autoconf \
     dpkg-dev \
@@ -14,88 +21,43 @@ ENV PHPIZE_DEPS \
     g++ \
     gcc \
     libc-dev \
-    lcov \
-    libpcre3-dev \
     make \
     pkg-config \
-    re2c \
-    build-essential \
-    wget \
-    curl \
-    git \
-    vim \
-    autoconf \
-    software-properties-common \
-    mm-common \
-    libreadline-dev \
-    libxslt1-dev \
-    re2c \
-    libpng-dev \
-    libjpeg-dev \
-    m4 \
-    lcov \
-    libicu-dev \
-    libc-bin \
-    tzdata \
-    initscripts \
-    libedit2 \
-    libonig2 \
-    libqdbm14 \
     bison \
-    snmp \
-    libbison-dev \
-    libxml2-dev \
-    libevent-dev \
-    zlib1g-dev \
+    re2c \
+    lcov \
+    valgrind \
+    libxslt1-dev \
+    libtidy-dev \
     libbz2-dev \
-    libgmp3-dev \
-    libssl-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libxpm-dev \
-    libgd2-xpm-dev \
-    libmcrypt-dev \
-    memcached \
-    libmemcached-dev \
-    libpcre3-dev \
-    libc-client-dev \
-    libkrb5-dev \
-    libsasl2-dev \
-    libmysqlclient-dev \
-    libpspell-dev \
-    libsnmp-dev \
-    libxslt-dev \
-    libtool \
-    libc-client2007e \
     libc-client2007e-dev \
-    libenchant-dev \
-    libgmp-dev \
-    librecode-dev \
-    libmm-dev \
-    libmm14 \
+    libkrb5-dev \
+    libpq-dev \
+    libonig-dev \
     libzip-dev \
-    libedit-dev
-ENV PHP_INI_DIR /usr/local/etc/php
-ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
-ENV PHP_CPPFLAGS="$PHP_CFLAGS"
-ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
+    libgmp-dev \
+    libgdbm-dev \
+    firebird-dev \
+    libreadline-dev \
+    unixodbc-dev \
+    freetds-dev \
+    libpcre3-dev \
+    libmm-dev \
+    libenchant-dev \
+    libpspell-dev
 
-RUN ln -fs /usr/include/linux/igmp.h /usr/include/gmp.h
-RUN ln -fs /usr/lib/i386-linux-gnu/libldap.so /usr/lib/
-
-RUN apt-get update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y \
     $PHPIZE_DEPS \
     ca-certificates \
     curl \
-    libedit2 \
-    libsqlite3-0 \
-    libxml2 \
-    xz-utils \
     --no-install-recommends && rm -r /var/lib/apt/lists/*
 
-RUN mkdir -p $PHP_INI_DIR/conf.d
+RUN set -eux; \
+    ln -fs /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/libsybdb.so; \
+    mkdir -p "$PHP_INI_DIR/conf.d"
+
 RUN set -xe; \
-    \
     fetchDeps=' \
     wget \
     unzip \
@@ -105,29 +67,40 @@ RUN set -xe; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p /usr/src; \
     cd /usr/src; \
-    wget -O php-src-PHP-7.2.zip https://github.com/php/php-src/archive/PHP-7.2.zip;
+    wget -O php-src-PHP-7.3.zip https://github.com/php/php-src/archive/PHP-7.3.zip;
 
 COPY docker-php-source /usr/local/bin/
 
-RUN set -xe \
-    && buildDeps=" \
-    $PHP_EXTRA_BUILD_DEPS \
-    libcurl4-openssl-dev \
-    libedit-dev \
-    libsqlite3-dev \
-    libssl-dev \
-    libxml2-dev \
-    build-essential \
-    autoconf \
-    automake \
-    libtool \
-    bison \
-    re2c \
-    " \
-    && apt-get update && apt-get install -y $buildDeps --no-install-recommends && rm -rf /var/lib/apt/lists/* \
-    && export CFLAGS="$PHP_CFLAGS" \
-    CPPFLAGS="$PHP_CPPFLAGS" \
-    LDFLAGS="$PHP_LDFLAGS"
+RUN set -eux; \
+    savedAptMark="$(apt-mark showmanual)"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libcurl4-gnutls-dev \
+        libedit-dev \
+        libsodium-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libxml2-dev \
+        zlib1g-dev \
+    ; \
+    sed -e 's/stretch/buster/g' /etc/apt/sources.list > /etc/apt/sources.list.d/buster.list; \
+    { \
+        echo 'Package: *'; \
+        echo 'Pin: release n=buster'; \
+        echo 'Pin-Priority: -10'; \
+        echo; \
+        echo 'Package: libargon2*'; \
+        echo 'Pin: release n=buster'; \
+        echo 'Pin-Priority: 990'; \
+    } > /etc/apt/preferences.d/argon2-buster; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends libargon2-dev; \
+    rm -rf /var/lib/apt/lists/*; \
+    export \
+        CFLAGS="$PHP_CFLAGS" \
+        CPPFLAGS="$PHP_CPPFLAGS" \
+        LDFLAGS="$PHP_LDFLAGS";            
+
 
 RUN docker-php-source extract \
     && cd /usr/src/php \
@@ -135,63 +108,86 @@ RUN docker-php-source extract \
     && debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)" \
     && ./buildconf \
     && ./configure \
-    --build="$gnuArch" \
-    --with-config-file-path="$PHP_INI_DIR" \
-    --with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
-    --enable-gcov \
-    --enable-debug \
-    --enable-sigchild \
-    --enable-libgcc \
-    --with-openssl \
-    --with-kerberos \
-    --with-pcre-regex \
-    --enable-bcmath \
-    --with-bz2 \
-    --enable-calendar \
-    --with-curl \
-    --with-enchant \
-    --enable-exif \
-    --enable-ftp \
-    --with-gd \
-    --enable-gd-jis-conv \
-    --with-gettext \
-    --with-mhash \
-    --with-kerberos \
-    --with-imap-ssl \
-    --enable-intl \
-    --enable-mbstring \
-    --with-onig \
-    --with-pspell \
-    --with-recode \
-    --with-mm \
-    --enable-shmop \
-    --with-snmp \
-    --enable-soap \
-    --enable-sockets \
-    --enable-sysvsem \
-    --enable-wddx \
-    --with-xmlrpc \
-    --with-xsl \
-    --enable-zip \
-    --with-readline \
-    --with-libedit \
-    --enable-ftp \
-    --enable-mbstring \
-    --enable-mysqlnd \
-    --with-libedit \
-    --with-zlib \
-    --with-pcre-regex=/usr \
-    --with-libdir="lib/$debMultiarch" \
-    $PHP_EXTRA_CONFIGURE_ARGS \
+        --build="$gnuArch" \
+        --with-config-file-path="$PHP_INI_DIR" \
+        --with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
+        --enable-gcov \
+        --enable-soap \
+        --enable-bcmath \
+        --enable-calendar \
+        --enable-dba \
+        --enable-exif \
+        --enable-ftp \
+        --enable-pcntl \
+        --enable-shmop \
+        --enable-sockets \
+        --enable-sysvmsg \
+        --enable-sysvsem \
+        --enable-sysvshm \
+        --enable-mbstring \
+        --enable-intl \
+        --enable-sigchild \
+        --enable-libgcc \
+        --enable-gd-jis-conv \
+        --enable-zip \
+        --enable-debug \
+        --enable-phpdbg \
+        --enable-fpm \
+        --enable-xmlreader \
+        --enable-zend-test \
+        --with-xsl \
+        --with-tidy \
+        --with-bz2 \
+        --with-imap \
+        --with-imap-ssl \
+        --with-kerberos \
+        --with-openssl \
+        --with-mysqli=mysqlnd \
+        --with-pdo-mysql=mysqlnd \
+        --with-pdo-sqlite \
+        --with-pgsql \
+        --with-pdo-pgsql \
+        --with-zlib \
+        --with-gmp \
+        --with-xmlrpc \
+        --with-gdbm \
+        --with-pdo-firebird \
+        --with-gettext \
+        --with-readline \
+        --with-mhash \
+        --with-unixODBC=/usr \
+        --with-pdo-odbc=unixODBC,/usr \
+        --with-pdo-dblib \
+        --with-interbase \
+        --with-pcre-valgrind \
+        --with-mm \
+        --with-pspell=/usr \
+        --with-enchant=/usr \
+        --with-libedit \
+        --with-litespeed \
+        --with-libzip \
+        --with-zlib-dir=/usr \
+        --with-curl=/usr \
+        $(test "$gnuArch" = 's390x-linux-gnu' && echo '--without-pcre-jit') \
     && make -j "$(nproc)" \
     && make install \
     && { find /usr/local/bin /usr/local/sbin -type f -executable -exec strip --strip-all '{}' + || true; } \
-    && cd / \
-    && pecl update-channels \
+    && rm -rf /usr/src/php-src-master.zip \
+    && chown -R php.php /usr/src/php \
     && rm -rf /tmp/pear ~/.pearrc \
-    && apt-get purge -y --auto-remove $fetchDeps
+    && echo 'phar.readonly = Off' >> ${PHP_INI_DIR}/php.ini
 
-RUN chown -R $USER_NAME.$USER_NAME /usr/src/
+USER php
 
-WORKDIR /usr/src/php/
-CMD ["/bin/bash"]
+RUN mkdir -p /home/php/phptt \
+    && cd /home/php/phptt \
+    && wget https://github.com/royopa/generate-phpt/archive/master.zip -O generate-phpt.zip \
+    && unzip generate-phpt.zip \
+    && rm -rf generate-phpt.zip \
+    && php generate-phpt-master/create-phar.php \
+    && mv generate-phpt-master/build/generate-phpt.phar /home/php/phptt/ \
+    && rm -rf generate-phpt-master
+
+WORKDIR /home/php/phptt
+
+CMD ["php", "-a"]
