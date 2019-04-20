@@ -13,7 +13,7 @@ If you'd like to see these images on Docker Hub: https://hub.docker.com/r/phptes
 
 <hr>
 
-## PHP Versions (linked to https://github.com/php/php-src branches)
+## PHP Versions (linked to https://github.com/php/php-src/branches/active branches)
 
 - PHP_HEAD: [![](https://images.microbadger.com/badges/image/phptestfestbrasil/phptt:PHP_HEAD.svg)](https://microbadger.com/images/phptestfestbrasil/phptt:PHP_HEAD "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/phptestfestbrasil/phptt:PHP_HEAD.svg)](https://microbadger.com/images/phptestfestbrasil/phptt:PHP_HEAD "Get your own version badge on microbadger.com")
 - PHP_7_4: [![](https://images.microbadger.com/badges/image/phptestfestbrasil/phptt:PHP_7_4.svg)](https://microbadger.com/images/phptestfestbrasil/phptt:PHP_HEAD "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/phptestfestbrasil/phptt:PHP_7_4.svg)](https://microbadger.com/images/phptestfestbrasil/phptt:PHP_HEAD "Get your own version badge on microbadger.com")
