@@ -185,9 +185,9 @@ RUN mkdir -p /home/php/phptt \
     && unzip generate-phpt.zip \
     && rm -rf generate-phpt.zip \
     && php generate-phpt-master/create-phar.php \
-    && mv generate-phpt-master/build/generate-phpt.phar /home/php/phptt/ \
+    && mv generate-phpt-master/build/generate-phpt.phar /usr/src/php/scripts/dev/ \
     && rm -rf generate-phpt-master
 
-WORKDIR /home/php/phptt
+WORKDIR /usr/src/php/
 
-CMD ["php", "-a"]
+CMD ["/bin/bash"]
