@@ -26,7 +26,7 @@ case "$1" in
 		elif [ -f "/usr/src/php-src-PHP-7.2.zip" ]; then
 			unzip /usr/src/php-src-PHP-7.2.zip -d "/tmp" && mv /tmp/php-src-PHP-7.2/* "$dir"
 		elif [ -f "/usr/src/php-src-PHP-7.1.zip" ]; then
-			unzip /usr/src/php-src-PHP-7.1.zip -d "/tmp" && mv /tmp/php-src-PHP-7.1/* "$dir"
+			unzip -qq /usr/src/php-src-PHP-7.1.zip -d "/tmp" && mv /tmp/php-src-PHP-7.1/* "$dir"
 		fi
 		;;
 
