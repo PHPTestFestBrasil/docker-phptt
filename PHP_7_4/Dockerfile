@@ -1,14 +1,6 @@
 FROM debian:stretch-slim
 
-RUN groupadd --gid 1000 php \
-    && useradd --uid 1000 --gid php -m php
-
-RUN set -eux; \
-    { \
-        echo 'Package: php*'; \
-        echo 'Pin: release *'; \
-        echo 'Pin-Priority: -1'; \
-} > /etc/apt/preferences.d/no-debian-php
+RUN groupadd --gid 1000 php && useradd --uid 1000 --gid php -m php && set -eux; { echo 'Package: php*'; echo 'Pin: release *'; echo 'Pin-Priority: -1'; } > /etc/apt/preferences.d/no-debian-php
 
 ENV PHP_INI_DIR="/usr/local/etc/php"
 ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
@@ -34,6 +26,7 @@ ENV PHPIZE_DEPS \
     libkrb5-dev \
     libpq-dev \
     libonig-dev \
+    libzip4 \
     libzip-dev \
     libgmp-dev \
     libgdbm-dev \
@@ -44,45 +37,42 @@ ENV PHPIZE_DEPS \
     libpcre3-dev \
     libmm-dev \
     libenchant-dev \
-    libpspell-dev
+    libpspell-dev \
+    libcurl4-gnutls-dev \
+    libedit-dev \
+    libsodium-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    libxml2-dev \
+    zlib1g-dev
+
+ENV FETCH_DEPS \
+    apt-utils \
+    wget \
+    unzip  \
+    ca-certificates \
+    curl
 
 RUN apt-get update \
     && apt-get install -y \
     $PHPIZE_DEPS \
-    ca-certificates \
-    curl \
+    $FETCH_DEPS \
     --no-install-recommends && rm -r /var/lib/apt/lists/*
 
 RUN set -eux; \
     ln -fs /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/libsybdb.so; \
-    mkdir -p "$PHP_INI_DIR/conf.d"
-
-RUN set -xe; \
-    fetchDeps=' \
-    wget \
-    unzip \
-    '; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends $fetchDeps; \
+    mkdir -p "$PHP_INI_DIR/conf.d";  \
+    set -xe; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p /usr/src; \
     cd /usr/src; \
-    wget -O php-src-PHP-7.4.zip https://github.com/php/php-src/archive/PHP-7.4.zip;
+    wget -q --show-progress -O php-src-PHP-7.4.zip https://github.com/php/php-src/archive/PHP-7.4.zip;
+
 
 COPY docker-php-source /usr/local/bin/
 
 RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        libcurl4-gnutls-dev \
-        libedit-dev \
-        libsodium-dev \
-        libsqlite3-dev \
-        libssl-dev \
-        libxml2-dev \
-        zlib1g-dev \
-    ; \
     sed -e 's/stretch/buster/g' /etc/apt/sources.list > /etc/apt/sources.list.d/buster.list; \
     { \
         echo 'Package: *'; \
@@ -94,7 +84,7 @@ RUN set -eux; \
         echo 'Pin-Priority: 990'; \
     } > /etc/apt/preferences.d/argon2-buster; \
     apt-get update; \
-    apt-get install -y --no-install-recommends libargon2-dev; \
+    apt-get install -y --no-install-recommends libargon2-dev && apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     export \
         CFLAGS="$PHP_CFLAGS" \
@@ -129,9 +119,9 @@ RUN docker-php-source extract \
         --enable-sigchild \
         --enable-libgcc \
         --enable-gd-jis-conv \
-        --enable-zip \
         --enable-debug \
         --enable-phpdbg \
+        --enable-phar \
         --enable-fpm \
         --enable-xmlreader \
         --enable-zend-test \
@@ -158,14 +148,11 @@ RUN docker-php-source extract \
         --with-unixODBC=/usr \
         --with-pdo-odbc=unixODBC,/usr \
         --with-pdo-dblib \
-        --with-interbase \
-        --with-pcre-valgrind \
         --with-mm \
         --with-pspell=/usr \
         --with-enchant=/usr \
         --with-libedit \
-        --with-litespeed \
-        --with-libzip \
+        --with-zip \
         --with-zlib-dir=/usr \
         --with-curl=/usr \
         $(test "$gnuArch" = 's390x-linux-gnu' && echo '--without-pcre-jit') \
@@ -175,14 +162,15 @@ RUN docker-php-source extract \
     && rm -rf /usr/src/php-src-master.zip \
     && chown -R php.php /usr/src/php \
     && rm -rf /tmp/pear ~/.pearrc \
-    && echo 'phar.readonly = Off' >> ${PHP_INI_DIR}/php.ini
+    && echo 'phar.readonly = Off' >> ${PHP_INI_DIR}/php.ini \
+    && make clean
 
 USER php
 
 RUN mkdir -p /home/php/phptt \
     && cd /home/php/phptt \
-    && wget https://github.com/royopa/generate-phpt/archive/master.zip -O generate-phpt.zip \
-    && unzip generate-phpt.zip \
+    && wget -q --show-progress https://github.com/royopa/generate-phpt/archive/master.zip -O generate-phpt.zip \
+    && unzip -qq generate-phpt.zip \
     && rm -rf generate-phpt.zip \
     && php generate-phpt-master/create-phar.php \
     && mv generate-phpt-master/build/generate-phpt.phar /usr/src/php/scripts/dev/ \
